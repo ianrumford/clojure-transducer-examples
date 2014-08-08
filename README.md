@@ -1,14 +1,26 @@
 # clojure-transducer-examples
 
-A Clojure library designed to ... well, that part is up to you.
+Some trivial examples of using Clojure Transducers
 
-## Usage
+## Maturity
 
-FIXME
+"A brief excursion into Clojure's new Transducers"
+
+## Documentation
+
+See associated blog post [Some trivial examples of using Clojure Transducers](http://ianrumford.github.io/blog/2014/08/08/Some-trivial-examples-of-using-Clojure-Transducers/)
+
+## Examples
+
+clojure-transducer-examples uses [Leiningen 2](http://leiningen.org).
+
+``` clojure
+lein run -m transducer-examples1
+```
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright (C) 2013 Ian Rumford.
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Licensed under [MIT](http://opensource.org/licenses/MIT)
+

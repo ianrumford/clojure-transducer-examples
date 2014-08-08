@@ -1,0 +1,1108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Some trivial examples of using Clojure Transducers</title>
+<!-- 2014-08-08 Fri 15:01 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Ian Rumford" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Some trivial examples of using Clojure Transducers</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-2">2. The Code</a>
+<ul>
+<li><a href="#sec-2-1">2.1. The Code - repo is on Github</a></li>
+<li><a href="#sec-2-2">2.2. The Code - running the examples</a></li>
+<li><a href="#sec-2-3">2.3. The Code - code is a tangled org-mode file</a></li>
+<li><a href="#sec-2-4">2.4. The Code - misc</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. The Examples Collection</a></li>
+<li><a href="#sec-4">4. Example 1 - how many children in the village?</a>
+<ul>
+<li><a href="#sec-4-1">4.1. Example 1a - using a reducer to count how many children in the village</a></li>
+<li><a href="#sec-4-2">4.2. Example 1b - using a transducer to count how many children in the village</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5. Example 2 - how many children in the Brown family?</a>
+<ul>
+<li><a href="#sec-5-1">5.1. Example 2a - using a reducer to count the children in the Brown family</a></li>
+<li><a href="#sec-5-2">5.2. Example 2b - using a transducer to count the children in the Brown family</a></li>
+</ul>
+</li>
+<li><a href="#sec-6">6. Example 3 - how many children's names start with J?</a>
+<ul>
+<li><a href="#sec-6-1">6.1. Example 3a - using a reducer to count children with names beginning with J</a></li>
+<li><a href="#sec-6-2">6.2. Example 3b - using a transducer to count children with names beginning with J</a></li>
+</ul>
+</li>
+<li><a href="#sec-7">7. Example 4 - creating a collection of children whose names start with J?</a>
+<ul>
+<li><a href="#sec-7-1">7.1. Example 4a - using a reducer to create a collection of children whose names start with J?</a></li>
+<li><a href="#sec-7-2">7.2. Example 4b - using a transducer to create a collection of children whose names start with J?</a></li>
+</ul>
+</li>
+<li><a href="#sec-8">8. Example 5 - calculate the average age of children on or below the equator</a>
+<ul>
+<li><a href="#sec-8-1">8.1. Example 5a - using a reducer to calculate the average age of children on or below the equator</a></li>
+<li><a href="#sec-8-2">8.2. Example 5b - using a transducer to calculate the average age of children on or below the equator</a></li>
+</ul>
+</li>
+<li><a href="#sec-9">9. Example 6 - comparing the performance of reducers and transducers</a>
+<ul>
+<li><a href="#sec-9-1">9.1. Example 6a - time a reducer adding up Example 5's ages</a></li>
+<li><a href="#sec-9-2">9.2. Example 6b - time a transducer adding up Example 5's ages</a></li>
+</ul>
+</li>
+<li><a href="#sec-10">10. Example 7 - all the relatives visit the village!</a>
+<ul>
+<li><a href="#sec-10-1">10.1. Example 7 - make some visitors</a></li>
+<li><a href="#sec-10-2">10.2. Example 7a - using reducers to count the visiting Brown children</a></li>
+<li><a href="#sec-10-3">10.3. Example 7b - using transducers to count the visiting Brown children</a></li>
+<li><a href="#sec-10-4">10.4. Example 7c - using core map, filter and reduce to count the visiting Brown children</a></li>
+</ul>
+</li>
+<li><a href="#sec-11">11. Final Words</a></li>
+</ul>
+</div>
+</div>
+<blockquote>
+<p>
+TL;DR: first take on Clojure's new Transducers
+</p>
+</blockquote>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+[Rich Hickey][HickeyTwitter] published a [post][HickeyBlogTransducers6Aug14] a few days ago on the
+forthcoming [Transducers][HickeyBlogTransducers6Aug14]. 
+</p>
+
+<p>
+<b>Transducers</b> should make their first appearance in [Clojure][ClojureHome] <span class="underline">1.7.0</span>
+and the examples below were run using <span class="underline">1.7.0-alpha1</span>
+</p>
+
+<p>
+The first paragraph of Rich's post describes <b>Transducers</b> as:
+</p>
+
+<blockquote>
+<p>
+Transducers are a powerful and composable way to build algorithmic
+transformations that you can reuse in many contexts, and they're
+coming to Clojure core and core.async.
+</p>
+</blockquote>
+
+<p>
+Rich also says:
+</p>
+
+<blockquote>
+<p>
+The other source of power comes from the fact that transducers compose using ordinary function composition.
+</p>
+</blockquote>
+
+<p>
+<b>Transducers</b> follow on from <b>Reducers</b>, first
+[announced][HickeyBlogReducers18May12] by Rich in
+May 2012.
+</p>
+
+<p>
+I wrote a post back in late 2012 called [Some trivial examples of
+using Clojure Reducers][RumfordBlogTrivialReducers17Nov12] in which I
+attempted to offer some practical, if contrived, examples of how to
+use <b>reducers</b>.
+</p>
+
+<p>
+This post reprises the examples in the [reducers post][RumfordBlogTrivialReducers17Nov12] but now includes
+equivalent contrived <b>transducers</b> examples as well.
+</p>
+
+<p>
+I've includes some material from the [reducers post][RumfordBlogTrivialReducers17Nov12] for completeness, but without
+any explanation, so you don't have to flip between the two. But you may
+want to refer to the [reducers post][RumfordBlogTrivialReducers17Nov12] for <b>reducers</b> background.
+</p>
+
+<pre class="example">
+&lt;!-- more --&gt;
+</pre>
+</div>
+</div>
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> The Code</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> The Code - repo is on Github</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+The repo with the example code can be found on
+[Github][RumfordGithubClojureTransducerExamples].  Its a
+[Leiningen][LeiningenHome] project.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> The Code - running the examples</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Run the examples in the usual way
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-sh">lein run -m transducers-examples1
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> The Code - code is a tangled org-mode file</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+The source code and <span class="underline">project.clj</span> are generated (tangled) from the
+org-mode source of this post found in the <span class="underline">doc</span> folder.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4"><span class="section-number-3">2.4</span> The Code - misc</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+The <b>reducers</b> namespace is <span class="underline">r</span> in the examples below i.e.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure">[<span style="color: #228b22;">clojure.core.reducers</span> <span style="color: #008b8b;">:as</span> r]
+</pre>
+</div>
+
+<p>
+There is no need to <span class="underline">require</span>  <b>transducers</b>.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> The Examples Collection</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Many of the following examples will use the same collection
+holding the population of a small village.  The village
+has four families, some families have two parents, others one; and
+each family between one and three children.  One family lives in the North, and one each in the South, East and West.
+</p>
+
+<p>
+<span class="underline">This is stylised, artificial and contrived data designed to be easily understandable to most and in no way intended to suggest any family structures, conventions or arrangements as socially preferable.  Just saying.</span>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">The Families in the Village</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">village</span>
+  [{<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:north</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"smith"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"sue"</span> <span style="color: #008b8b;">:age</span> 37 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:parent</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:north</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"smith"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"stan"</span> <span style="color: #008b8b;">:age</span> 35 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:m</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:parent</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:north</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"smith"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"simon"</span> <span style="color: #008b8b;">:age</span> 7 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:m</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:north</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"smith"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"sadie"</span> <span style="color: #008b8b;">:age</span> 5 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jill"</span> <span style="color: #008b8b;">:age</span> 45 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:parent</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jeff"</span> <span style="color: #008b8b;">:age</span> 45 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:m</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:parent</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jackie"</span> <span style="color: #008b8b;">:age</span> 19 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jason"</span> <span style="color: #008b8b;">:age</span> 16 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"june"</span> <span style="color: #008b8b;">:age</span> 14 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:west</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"brown"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"billie"</span> <span style="color: #008b8b;">:age</span> 55 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:parent</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:west</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"brown"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"brian"</span> <span style="color: #008b8b;">:age</span> 23 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:m</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:west</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"brown"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"bettie"</span> <span style="color: #008b8b;">:age</span> 29 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:east</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"williams"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"walter"</span> <span style="color: #008b8b;">:age</span> 23 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:m</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:parent</span>}
+   {<span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:east</span> <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"williams"</span> <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"wanda"</span> <span style="color: #008b8b;">:age</span> 3 <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span> <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}]<span style="color: #8c8c8c;">)</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Example 1 - how many children in the village?</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+An obvious way to do this would be to <span class="underline">map</span>  each child to the value
+1, else 0.  The total number of children is then the simple addition
+of the 1s &amp; 0s results of the map operation.
+</p>
+</div>
+
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Example 1a - using a reducer to count how many children in the village</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+The <b>reducers</b> way looks like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 1a - using a reducer to add up all the mapped values</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex1a-map-children-to-value-1</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/map #<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">if</span> <span style="color: #8c8c8c;">(</span>= <span style="color: #008b8b;">:child</span> <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:role</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))</span> 1 0<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce + 0 <span style="color: #8c8c8c;">(</span>ex1a-map-children-to-value-1 village<span style="color: #8c8c8c;">))</span>
+<span style="color: #006400;">;;</span><span style="color: #006400;">=&gt;</span>
+8
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> Example 1b - using a transducer to count how many children in the village</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+The <b>transducers</b> way looks very similar. Literally the only difference is to use <b>core</b> map
+rather than the <b>reducers</b> map.
+</p>
+
+<p>
+First the <span class="underline">transducer</span>
+function <span class="underline">ex1b-map-children-to-value-1</span> is created using the new
+arity for <span class="underline">map</span> that takes just the mapping function, no
+collection. 
+</p>
+
+<p>
+Then the <span class="underline">transducer</span> is used with the new <b>transduce</b> function to
+reduce the collection and return the answer. <b>transduce</b> take the <span class="underline">transducer</span>
+function as its first argument, then the "usual" reducer arguments
+of reducing function, initial value and collection. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 1b - using a transducer to add up all the mapped values</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create the transducers using the new arity for map that</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">takes just the function, no collection</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex1b-map-children-to-value-1</span> <span style="color: #8c8c8c;">(</span>map #<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">if</span> <span style="color: #8c8c8c;">(</span>= <span style="color: #008b8b;">:child</span> <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:role</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))</span> 1 0<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">now use transduce (c.f r/reduce) with the transducer to get the answer </span>
+<span style="color: #8c8c8c;">(</span>transduce ex1b-map-children-to-value-1 + 0 village<span style="color: #8c8c8c;">)</span>
+<span style="color: #006400;">;;</span><span style="color: #006400;">=&gt;</span>
+8
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Example 2 - how many children in the Brown family?</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+An obvious way to find how many children just in the Brown family
+would be to select ( <span class="underline">filter</span>) the members of the Brown family, and
+use the same <span class="underline">map</span> function - e.g. <span class="underline">ex1a-map-children-to-value-1</span> - from
+Example 1 to count the children.
+</p>
+</div>
+
+<div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> Example 2a - using a reducer to count the children in the Brown family</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+Along with <span class="underline">map</span>, <b>reducers</b> have a <span class="underline">filter</span> function that returns another function that can be used with <span class="underline">reduce</span>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 2a - using a reducer to count the children in the Brown family</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create the reducer to select members of the Brown family</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex2a-select-brown-family</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #8b2252;">"brown"</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">string</span>/lower-case <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:family</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">)))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">compose a composite function to select the Brown family and map children to 1</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex2a-count-brown-family-children</span> <span style="color: #8c8c8c;">(</span>comp ex1a-map-children-to-value-1 ex2a-select-brown-family<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">reduce to add up all the Brown children</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce + 0 <span style="color: #8c8c8c;">(</span>ex2a-count-brown-family-children village<span style="color: #8c8c8c;">))</span>
+<span style="color: #006400;">;;</span><span style="color: #006400;">=&gt;</span>
+2
+</pre>
+</div>
+
+<p>
+Its worth observing <b>reducers</b> <span class="underline">reduce</span> does <b>not</b> need to create
+any intermediate collections.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> Example 2b - using a transducer to count the children in the Brown family</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+The transducer-aware <b>core</b>  <span class="underline">filter</span> function can be used to select
+the Brown family members, while the  <span class="underline">transducer</span>
+<span class="underline">ex1b-map-children-to-value-1</span> can be used to map children to 1, else 0.
+</p>
+
+<p>
+As with <b>reducers</b>, the two functions <span class="underline">ex2b-select-brown-family</span>
+and <span class="underline">ex1b-map-children-to-value-1</span> can be composed together.
+</p>
+
+<p>
+And as before, <b>transduce</b> is used to count (reduce) the number of children.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 2b - using a transducer to count the children in the Brown family</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create the transducer filter to select members of the Brown family</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex2b-select-brown-family</span> <span style="color: #8c8c8c;">(</span>filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #8b2252;">"brown"</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">string</span>/lower-case <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:family</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">)))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">compose a composite function to select the Brown family and map children to 1</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">NOTE: transducer comp functions are applied left-to-right</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex2b-count-brown-family-children</span> <span style="color: #8c8c8c;">(</span>comp ex2b-select-brown-family ex1b-map-children-to-value-1<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">transduce to add up all the Brown children</span>
+<span style="color: #8c8c8c;">(</span>transduce ex2b-count-brown-family-children + 0 village<span style="color: #8c8c8c;">)</span>
+<span style="color: #006400;">;;</span><span style="color: #006400;">=&gt;</span>
+2
+</pre>
+</div>
+
+<blockquote>
+<p>
+Note there is a gotcha here.  The functions in the composed
+transducer ex2b-count-brown-family-children are
+applied left-to-right not right-to-left as is usual with comp.
+</p>
+</blockquote>
+
+<p>
+Although not explicitly stated in Rich's
+[post][HickeyBlogTransducers6Aug14] I guess <b>transducers</b>
+do not create intermediate collections either.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> Example 3 - how many children's names start with J?</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+We already know the answer:  just the 3 children in the <span class="underline">Jones</span> family.
+</p>
+
+<p>
+Algorithmically, this is a three step pipeline: <span class="underline">filter</span> on children, a <span class="underline">filter</span> on
+names beginning with "J" (or "j") and finally count of how many (children) in the result.
+</p>
+</div>
+
+<div id="outline-container-sec-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> Example 3a - using a reducer to count children with names beginning with J</h3>
+<div class="outline-text-3" id="text-6-1">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 3a - using a reducer to count children with names beginning with J</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">select (filter) just the children</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex3a-select-children</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #008b8b;">:child</span> <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:role</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">select names beginning with "j"</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex3a-select-names-beginning-with-j</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #8b2252;">"j"</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">string</span>/lower-case <span style="color: #8c8c8c;">(</span>first <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:name</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">In Example 1 we created the _map_ function</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">ex1a-map-children-to-value-1 to enable reduce to count the number</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">of children.</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">But the need to count the number of entries in a collection using</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">reduce, after a pipeline possibly involving many filters and</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">mappers, is a common one. This is straightforward to do, in the final</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">stage of the pipeline use a map function to transform each entry to</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">value 1.</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">map entries in a collection to 1</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex0a-map-to-value-1</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/map (fn [v] 1<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create the three step count-children-with-names-beginning-j function</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex3a-count-children-with-names-beginning-j</span> <span style="color: #8c8c8c;">(</span>comp ex0a-map-to-value-1
+                                                      ex3a-select-names-beginning-with-j
+                                                      ex3a-select-children<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">reduce the village with the ex32-count-children-with-names-beginning-j function</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce + 0 <span style="color: #8c8c8c;">(</span>ex3a-count-children-with-names-beginning-j village<span style="color: #8c8c8c;">))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+3
+</pre>
+</div>
+
+
+<p>
+Its worth labouring the point that composing the custom reducer <span class="underline">count-children-with-names-beginning-js</span> from
+individual <span class="underline">filters</span> and <span class="underline">mappers</span> is a very powerful technique.
+</p>
+</div>
+</div>
+<div id="outline-container-sec-6-2" class="outline-3">
+<h3 id="sec-6-2"><span class="section-number-3">6.2</span> Example 3b - using a transducer to count children with names beginning with J</h3>
+<div class="outline-text-3" id="text-6-2">
+<p>
+As with <b>transducers</b> map, <span class="underline">filter</span> has a new arity, taking just the
+filtering function, no collection.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 3b - using a transducer to count children with names beginning with J</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">select (filter) just the children</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex3b-select-children</span> <span style="color: #8c8c8c;">(</span>filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #008b8b;">:child</span> <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:role</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">select names beginning with "j"</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex3b-select-names-beginning-with-j</span> <span style="color: #8c8c8c;">(</span>filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #8b2252;">"j"</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">string</span>/lower-case <span style="color: #8c8c8c;">(</span>first <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:name</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">map entries in a collection to 1</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex0b-map-to-value-1</span> <span style="color: #8c8c8c;">(</span>map (fn [v] 1<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create the three step count-children-with-names-beginning-j function</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">note the left-to-right order in which the indivudal transducers</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex3b-count-children-with-names-beginning-j</span> <span style="color: #8c8c8c;">(</span>comp ex3b-select-children
+                                                      ex3b-select-names-beginning-with-j
+                                                      ex0b-map-to-value-1<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">transduce the village with the ex3b-count-children-with-names-beginning-j transducer</span>
+<span style="color: #8c8c8c;">(</span>transduce ex3b-count-children-with-names-beginning-j + 0 village<span style="color: #8c8c8c;">)</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+3
+</pre>
+</div>
+
+<blockquote>
+<p>
+Again, note the ex3b-count-children-with-names-beginning-j transducer
+applies it constituent transducers left-to-right.
+</p>
+</blockquote>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Example 4 - creating a collection of children whose names start with J?</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+Sometimes you will want the resulting collection itself, post map,
+filter, etc, and not reduced any further.
+</p>
+</div>
+
+<div id="outline-container-sec-7-1" class="outline-3">
+<h3 id="sec-7-1"><span class="section-number-3">7.1</span> Example 4a - using a reducer to create a collection of children whose names start with J?</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+Since we want the actual entries, rather than count them, we need a
+pure filter pipeline, similar to Example 3 but one that <b>doesn't</b> use
+the <span class="underline">ex0a-map-to-value-1</span> mapper.
+</p>
+
+<p>
+Creating a vector of the J children can be done simply by using <span class="underline">into</span>.
+</p>
+
+<p>
+Under the covers <span class="underline">into</span> uses <span class="underline">reduce</span> so creating the vector is just a
+matter of applying the
+<span class="underline">ex4a-select-children-with-names-beginning-with-j</span> reducers to the
+village and then using the resulting collection with <span class="underline">into</span> to create the vector.
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 4a - a reducer to create a collection of children whose names start with J?</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create a reducing function to select (filter) children with names starting with "J"</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex4a-select-children-with-names-beginning-with-j</span> <span style="color: #8c8c8c;">(</span>comp ex3a-select-names-beginning-with-j
+                                                            ex3a-select-children<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">use into to create a vector of the "J" children</span>
+<span style="color: #8c8c8c;">(</span>into [] <span style="color: #8c8c8c;">(</span>ex4a-select-children-with-names-beginning-with-j village<span style="color: #8c8c8c;">))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+[{<span style="color: #008b8b;">:age</span> 19, <span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span>, <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jackie"</span>, <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span>, <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span>, <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+ {<span style="color: #008b8b;">:age</span> 16, <span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span>, <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jason"</span>, <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span>, <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span>, <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+ {<span style="color: #008b8b;">:age</span> 14, <span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span>, <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"june"</span>, <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span>, <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span>, <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}]
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-7-2" class="outline-3">
+<h3 id="sec-7-2"><span class="section-number-3">7.2</span> Example 4b - using a transducer to create a collection of children whose names start with J?</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+Very similar to <b>reducers</b>, <b>transducers</b> can use <span class="underline">into</span> to create a
+collection. 
+</p>
+
+<blockquote>
+<p>
+Note <span class="underline">into</span> takes the <span class="underline">transducer</span> and the collection as arguments,
+not just the collection.
+</p>
+</blockquote>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 4b - a transducer to create a collection of children whose names start with J?</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create a reducing function to select (filter) children with names starting with "J"t</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex4b-select-children-with-names-beginning-with-j</span> <span style="color: #8c8c8c;">(</span>comp ex3b-select-names-beginning-with-j
+                                                            ex3b-select-children<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">use into to create a vector of the "J" children</span>
+<span style="color: #8c8c8c;">(</span>into [] ex4b-select-children-with-names-beginning-with-j village<span style="color: #8c8c8c;">)</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+[{<span style="color: #008b8b;">:age</span> 19, <span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span>, <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jackie"</span>, <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span>, <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span>, <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+ {<span style="color: #008b8b;">:age</span> 16, <span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span>, <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"jason"</span>, <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span>, <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span>, <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}
+ {<span style="color: #008b8b;">:age</span> 14, <span style="color: #008b8b;">:home</span> <span style="color: #008b8b;">:south</span>, <span style="color: #008b8b;">:name</span> <span style="color: #8b2252;">"june"</span>, <span style="color: #008b8b;">:sex</span> <span style="color: #008b8b;">:f</span>, <span style="color: #008b8b;">:family</span> <span style="color: #8b2252;">"jones"</span>, <span style="color: #008b8b;">:role</span> <span style="color: #008b8b;">:child</span>}]
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Example 5 - calculate the average age of children on or below the equator</h2>
+<div class="outline-text-2" id="text-8">
+<p>
+A more involved, but still straightforward, example to finish this
+section: what is the average age of the children who live on or below
+the equator? By equator I mean where <span class="underline">home</span> is East, South or West.
+</p>
+
+<p>
+To do this, the value of <span class="underline">home</span> will be mapped to a latitude and
+longitude. For example West will be <span class="underline">:lat 0 :lng -180</span> and South is
+<span class="underline">:lat -90 :lng 0</span>.
+</p>
+</div>
+
+<div id="outline-container-sec-8-1" class="outline-3">
+<h3 id="sec-8-1"><span class="section-number-3">8.1</span> Example 5a - using a reducer to calculate the average age of children on or below the equator</h3>
+<div class="outline-text-3" id="text-8-1">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 5a - using a reducer to calculate the average age of children on or below the equator</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">map :home to latitude and longitude</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5a-map-home-to-latitude-and-longitude</span>
+  <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/map
+   (fn [v]
+     <span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">condp</span> = <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:home</span> v<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:north</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> 90 <span style="color: #008b8b;">:lng</span> 0<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:south</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> -90 <span style="color: #008b8b;">:lng</span> 0<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:west</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> 0 <span style="color: #008b8b;">:lng</span> -180<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:east</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> 0 <span style="color: #008b8b;">:lng</span> 180<span style="color: #8c8c8c;">)))))</span>
+
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">select people on or below the equator i.e. latitude &lt;= 0</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5a-select-people-on-or-below-equator</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/filter #<span style="color: #8c8c8c;">(</span>&gt;= 0 <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:lat</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">To find the average age, we need to add up all the children's ages and</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">divide by how many children.</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">Note, rather than creating a composite pipeline function, in this example</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">the individual stages of the pipeline are used explicitly.</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">count the number of children on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5a-no-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce + 0
+          <span style="color: #8c8c8c;">(</span>ex0a-map-to-value-1
+           <span style="color: #8c8c8c;">(</span>ex5a-select-people-on-or-below-equator
+            <span style="color: #8c8c8c;">(</span>ex5a-map-home-to-latitude-and-longitude
+             <span style="color: #8c8c8c;">(</span>ex3a-select-children village<span style="color: #8c8c8c;">))))))</span>
+
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">sum the ages of children</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5a-select-age</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/map #<span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:age</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5a-sum-of-ages-of-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce + 0
+          <span style="color: #8c8c8c;">(</span>ex5a-select-age
+           <span style="color: #8c8c8c;">(</span>ex5a-select-people-on-or-below-equator
+            <span style="color: #8c8c8c;">(</span>ex5a-map-home-to-latitude-and-longitude
+             <span style="color: #8c8c8c;">(</span>ex3a-select-children village<span style="color: #8c8c8c;">))))))</span>
+
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">calculate the average age of children on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5a-averge-age-of-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span>float <span style="color: #8c8c8c;">(</span>/ ex5a-sum-of-ages-of-children-on-or-below-the-equator ex5a-no-children-on-or-below-the-equator <span style="color: #8c8c8c;">)))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+17.3
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-8-2" class="outline-3">
+<h3 id="sec-8-2"><span class="section-number-3">8.2</span> Example 5b - using a transducer to calculate the average age of children on or below the equator</h3>
+<div class="outline-text-3" id="text-8-2">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 5b - using a transducer to calculate the average age of children on or below the equator</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">map :home to latitude and longitude</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-map-home-to-latitude-and-longitude</span>
+  <span style="color: #8c8c8c;">(</span>map
+   (fn [v]
+     <span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">condp</span> = <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:home</span> v<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:north</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> 90 <span style="color: #008b8b;">:lng</span> 0<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:south</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> -90 <span style="color: #008b8b;">:lng</span> 0<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:west</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> 0 <span style="color: #008b8b;">:lng</span> -180<span style="color: #8c8c8c;">)</span>
+       <span style="color: #008b8b;">:east</span> <span style="color: #8c8c8c;">(</span>assoc v <span style="color: #008b8b;">:lat</span> 0 <span style="color: #008b8b;">:lng</span> 180<span style="color: #8c8c8c;">)))))</span>
+
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">select people on or below the equator i.e. latitude &lt;= 0</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-select-people-on-or-below-equator</span> <span style="color: #8c8c8c;">(</span>filter #<span style="color: #8c8c8c;">(</span>&gt;= 0 <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:lat</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create a "utility" transducer to select children on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-select-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span>comp ex3b-select-children
+        ex5b-map-home-to-latitude-and-longitude
+        ex5b-select-people-on-or-below-equator<span style="color: #8c8c8c;">))</span> 
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create a transducer to count the number of children on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-count-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span>comp ex5b-select-children-on-or-below-the-equator
+        ex0b-map-to-value-1<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">now count the number of children on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-no-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span>transduce ex5b-count-children-on-or-below-the-equator + 0 village<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create a transducer to extract the age</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-select-age</span> <span style="color: #8c8c8c;">(</span>map #<span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:age</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">create a transducer to extract the ages of all chilren</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-extract-ages-of-children-on-or-below-thew-equator</span>
+  <span style="color: #8c8c8c;">(</span>comp
+   ex5b-select-children-on-or-below-the-equator
+   ex5b-select-age<span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">now sum the ages</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-sum-of-ages-of-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span>transduce ex5b-extract-ages-of-children-on-or-below-thew-equator + 0 village <span style="color: #8c8c8c;">))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">calculate the average age of children on or below the equator</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex5b-averge-age-of-children-on-or-below-the-equator</span>
+  <span style="color: #8c8c8c;">(</span>float <span style="color: #8c8c8c;">(</span>/ ex5b-sum-of-ages-of-children-on-or-below-the-equator ex5b-no-children-on-or-below-the-equator<span style="color: #8c8c8c;">)))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+17.3
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-9" class="outline-2">
+<h2 id="sec-9"><span class="section-number-2">9</span> Example 6 - comparing the performance of reducers and transducers</h2>
+<div class="outline-text-2" id="text-9">
+<p>
+Lets time the addition of the ages from Example 5 using <b>reducers</b>
+ <span class="underline">reduce</span> and <span class="underline">fold</span>, and <b>transducers</b> <span class="underline">transduce</span>.
+</p>
+</div>
+
+<div id="outline-container-sec-9-1" class="outline-3">
+<h3 id="sec-9-1"><span class="section-number-3">9.1</span> Example 6a - time a reducer adding up Example 5's ages</h3>
+<div class="outline-text-3" id="text-9-1">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 6a - time a reducer adding up Example 5's ages</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">time reducer adding up Example 5's ages</span>
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">dotimes</span> [n 100000] <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce +
+                                  <span style="color: #8c8c8c;">(</span>ex5a-select-age
+                                   <span style="color: #8c8c8c;">(</span>ex5a-select-people-on-or-below-equator
+                                    <span style="color: #8c8c8c;">(</span>ex5a-map-home-to-latitude-and-longitude
+                                     <span style="color: #8c8c8c;">(</span>ex3a-select-children village<span style="color: #8c8c8c;">)))))))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~700 msecs"</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">time fold adding up Example 5's ages</span>
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">dotimes</span> [n 100000] <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/fold +
+                               <span style="color: #8c8c8c;">(</span>ex5a-select-age
+                                <span style="color: #8c8c8c;">(</span>ex5a-select-people-on-or-below-equator
+                                 <span style="color: #8c8c8c;">(</span>ex5a-map-home-to-latitude-and-longitude
+                                  <span style="color: #8c8c8c;">(</span>ex3a-select-children village<span style="color: #8c8c8c;">)))))))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~700 msecs"</span>
+</pre>
+</div>
+
+<p>
+Its not possible to see the benefits on <span class="underline">fold's</span> ability to
+parallelise on this volume of data (village).
+</p>
+</div>
+</div>
+<div id="outline-container-sec-9-2" class="outline-3">
+<h3 id="sec-9-2"><span class="section-number-3">9.2</span> Example 6b - time a transducer adding up Example 5's ages</h3>
+<div class="outline-text-3" id="text-9-2">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 6b - time a transducer adding up Example 5's ages</span>
+
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">dotimes</span> [n 100000] <span style="color: #8c8c8c;">(</span>transduce ex5b-extract-ages-of-children-on-or-below-thew-equator + 0 village<span style="color: #8c8c8c;">)))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~700 msecs"</span>
+</pre>
+</div>
+
+<p>
+So, in this example, its not possible to see any performance difference between <b>reducers</b> and <b>transducers</b>.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-10" class="outline-2">
+<h2 id="sec-10"><span class="section-number-2">10</span> Example 7 - all the relatives visit the village!</h2>
+<div class="outline-text-2" id="text-10">
+<p>
+Its that time of year again and all the relatives of the families in the village visit and
+the population of the village swells enormously to 10 million people.
+</p>
+</div>
+
+<div id="outline-container-sec-10-1" class="outline-3">
+<h3 id="sec-10-1"><span class="section-number-3">10.1</span> Example 7 - make some visitors</h3>
+<div class="outline-text-3" id="text-10-1">
+<p>
+Lets define some functions to create an influx of visitors. <span class="underline">Note, no attempt has been made to ensure this randomly generated data makes any sort of real world sense - it could include e.g. a child of age 100.</span>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 7 - make some visitors</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-fn-random-name</span> (fn [] <span style="color: #8c8c8c;">(</span>rand-nth [<span style="color: #8b2252;">"chris"</span> <span style="color: #8b2252;">"jim"</span> <span style="color: #8b2252;">"mark"</span> <span style="color: #8b2252;">"jon"</span> <span style="color: #8b2252;">"lisa"</span> <span style="color: #8b2252;">"kate"</span> <span style="color: #8b2252;">"jay"</span> <span style="color: #8b2252;">"june"</span> <span style="color: #8b2252;">"julie"</span> <span style="color: #8b2252;">"laura"</span>]<span style="color: #8c8c8c;">)))</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-fn-random-family</span> (fn [] <span style="color: #8c8c8c;">(</span>rand-nth [<span style="color: #8b2252;">"smith"</span> <span style="color: #8b2252;">"jones"</span> <span style="color: #8b2252;">"brown"</span> <span style="color: #8b2252;">"williams"</span> <span style="color: #8b2252;">"taylor"</span> <span style="color: #8b2252;">"davies"</span>]<span style="color: #8c8c8c;">)))</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-fn-random-home</span> (fn [] <span style="color: #8c8c8c;">(</span>rand-nth [<span style="color: #008b8b;">:north</span> <span style="color: #008b8b;">:south</span> <span style="color: #008b8b;">:east</span> <span style="color: #008b8b;">:west</span>]<span style="color: #8c8c8c;">)))</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-fn-random-sex</span> (fn [] <span style="color: #8c8c8c;">(</span>rand-nth [<span style="color: #008b8b;">:m</span> <span style="color: #008b8b;">:f</span>]<span style="color: #8c8c8c;">)))</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-fn-random-role</span> (fn [] <span style="color: #8c8c8c;">(</span>rand-nth [<span style="color: #008b8b;">:child</span> <span style="color: #008b8b;">:parent</span>]<span style="color: #8c8c8c;">)))</span>
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-fn-random-age</span> (fn [] <span style="color: #8c8c8c;">(</span>rand-int 100<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-visitor-template</span>
+  {<span style="color: #008b8b;">:home</span> ex7-fn-random-home
+   <span style="color: #008b8b;">:family</span> ex7-fn-random-family
+   <span style="color: #008b8b;">:name</span> ex7-fn-random-name
+   <span style="color: #008b8b;">:age</span> ex7-fn-random-age
+   <span style="color: #008b8b;">:sex</span> ex7-fn-random-sex
+   <span style="color: #008b8b;">:role</span> ex7-fn-random-role}<span style="color: #8c8c8c;">)</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">defn</span> <span style="color: #0000ff;">ex7-make-visitor</span> [] <span style="color: #8c8c8c;">(</span>into {} <span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">for</span> [[k v] ex7-visitor-template] [k <span style="color: #8c8c8c;">(</span>v<span style="color: #8c8c8c;">)</span>]<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">defn</span> <span style="color: #0000ff;">ex7-make-visitors</span> [n] <span style="color: #8c8c8c;">(</span>take n <span style="color: #8c8c8c;">(</span>repeatedly ex7-make-visitor<span style="color: #8c8c8c;">)))</span>
+
+<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">def</span> <span style="color: #a0522d;">ex7-visitors</span> <span style="color: #8c8c8c;">(</span>into [] <span style="color: #8c8c8c;">(</span>ex7-make-visitors 10000000<span style="color: #8c8c8c;">)))</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-10-2" class="outline-3">
+<h3 id="sec-10-2"><span class="section-number-3">10.2</span> Example 7a - using reducers to count the visiting Brown children</h3>
+<div class="outline-text-3" id="text-10-2">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 7a - using reducers count the visiting Brown children</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">count the visiting Brown children using reduce</span>
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/reduce + 0 <span style="color: #8c8c8c;">(</span>ex2a-count-brown-family-children ex7-visitors<span style="color: #8c8c8c;">)))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~1600 msecs"</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">count the visiting Brown children using fold</span>
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">r</span>/fold + <span style="color: #8c8c8c;">(</span>ex2a-count-brown-family-children ex7-visitors<span style="color: #8c8c8c;">)))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~555 msecs"</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-10-3" class="outline-3">
+<h3 id="sec-10-3"><span class="section-number-3">10.3</span> Example 7b - using transducers to count the visiting Brown children</h3>
+<div class="outline-text-3" id="text-10-3">
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 7b - using reducers count the visiting Brown children</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">count the visiting Brown children using transduce</span>
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span>transduce ex2b-count-brown-family-children + 0 ex7-visitors<span style="color: #8c8c8c;">))</span>
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~1640 msecs"</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-10-4" class="outline-3">
+<h3 id="sec-10-4"><span class="section-number-3">10.4</span> Example 7c - using core map, filter and reduce to count the visiting Brown children</h3>
+<div class="outline-text-3" id="text-10-4">
+<p>
+How do the <b>reducers</b> and <b>transducers</b> fare against <b>core</b> reduce?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-clojure"><span style="color: #006400;">;; </span><span style="color: #006400;">Example 7c - using core map, filter and reduce to count the visiting Brown children</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">count the visiting Brown children using core map, filter and reduce</span>
+<span style="color: #8c8c8c;">(</span>time <span style="color: #8c8c8c;">(</span>reduce + 0
+              <span style="color: #8c8c8c;">(</span>map #<span style="color: #8c8c8c;">(</span><span style="color: #a020f0;">if</span> <span style="color: #8c8c8c;">(</span>= <span style="color: #008b8b;">:child</span> <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:role</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">))</span> 1 0<span style="color: #8c8c8c;">)</span>
+                   <span style="color: #8c8c8c;">(</span>filter #<span style="color: #8c8c8c;">(</span>= <span style="color: #8b2252;">"brown"</span> <span style="color: #8c8c8c;">(</span><span style="color: #228b22;">string</span>/lower-case <span style="color: #8c8c8c;">(</span><span style="color: #008b8b;">:family</span> <span style="color: #a0522d;">%</span><span style="color: #8c8c8c;">)))</span> ex7-visitors<span style="color: #8c8c8c;">))))</span>
+
+<span style="color: #006400;">;; </span><span style="color: #006400;">=&gt;</span>
+<span style="color: #8b2252;">"Elapsed time: ~2000 msecs"</span>
+</pre>
+</div>
+
+<p>
+In the original [reducers post][RumfordBlogTrivialReducers17Nov12] I
+found <b>reducers</b> <span class="underline">fold</span> was nearly four times faster than <b>reducers</b>
+<span class="underline">reduce</span>. Here <span class="underline">fold</span> is about three times faster. (I'm using the same
+four core workstation.)
+</p>
+
+<p>
+<b>Transducers</b> come out with around the same time as <b>reducers</b> reduce.
+</p>
+
+<p>
+<span class="underline">All these numbers should be taken with a large pinch of salt, they
+are just a "wet finger" and this is in no way a rigorous benchmark.</span>
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-11" class="outline-2">
+<h2 id="sec-11"><span class="section-number-2">11</span> Final Words</h2>
+<div class="outline-text-2" id="text-11">
+<p>
+I've only scratched the surface of <b>transducers</b> in this post of
+course and Rich's [post][HickeyBlogTransducers6Aug14] has opened only
+a crack in the door to understanding the potential of <b>transducers</b>;
+there will be more to come,
+appreciate and learn I'm sure.
+</p>
+
+<p>
+So far I've found <b>transducers</b> more immediately understandable than I
+did <b>reducers</b>, maybe because I already have a reasonable grasp of the
+latter and  some existing mental context to understand the former. It
+will be interesting to hear / learn how other people new to both
+<span class="underline">grok</span> <b>transducers</b>.
+</p>
+
+<p>
+I've been doing a project using <b>reducers</b> <span class="underline">fold</span> for the parallisation
+benefits and have noticed I have needed to consciously mentally "switch" between the
+<b>core</b> world and <b>reducers</b> world. In that sense I think <b>reducers</b>
+have an "impedance mismatch" with the rest of <b>core</b>. 
+</p>
+
+<p>
+On the other
+hands, writing the examples above I've felt <b>transducers</b>
+are more "grounded" with <b>core</b>; indeed they are <b>core</b> (there is no <b>transducers</b>
+namespace).
+</p>
+
+<p>
+To sum up my opinion in a pithy one-liner: <b>transducers</b> are <b>reducers</b> decomplected.
+</p>
+
+<pre class="example">
+[ClojureHome]: http:///clojure.org
+[JavaHome]: http://www.java.com
+[LeiningenHome]: http://leiningen.org/
+[LeiningenGithub]: https://github.com/technomancy/leiningen
+[MavenHome]: http://maven.apache.org/
+[ClojarsHome]: http://clojars.org
+[RumfordGithubClojureTransducerExamples]: https://github.com/ianrumford/clojure-transducer-examples
+[RumfordBlogClojureCoreContractsFirstTake]: http://ianrumford.github.io/blog/2012/11/17/first-take-on-contracts-in-clojure/
+[RumfordBlogTrivialReducers17Nov12]: http://ianrumford.github.io/blog/2013/08/25/some-trivial-examples-of-using-clojure-reducers/
+[FogusHome]: http://blog.fogus.me
+[LaddadBookAspectJinAction]: http://www.manning.com/laddad/
+[LaddadTwitter]: https://twitter.com/ramnivas
+[KiczalesHome]: http://people.cs.ubc.ca/~gregor/
+[EmerickHome]: http://cemerick.com/
+[GrandHome]: http://clj-me.cgrand.net/
+[CarperHome]: http://briancarper.net/
+[ClojureProgrammingBook]: http://www.clojurebook.com/
+[emacshome]: http://www.gnu.org/software/emacs/
+[ClojureGithubReducers]: https://github.com/clojure/clojure/blob/master/src/clj/clojure/core/reducers.clj
+[Leiningen]: https://github.com/technomancy/leiningen
+[HickeyBlogReducers18May12]: http://clojure.com/blog/2012/05/08/reducers-a-library-and-model-for-collection-processing.html
+[HickeyBlogReducers215May12]: http://clojure.com/blog/2012/05/15/anatomy-of-reducer.html
+[HickeyBlogTransducers6Aug14]: http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming
+[Clojure Reducers Code]: https://gist.github.com/ianrumford/6333358
+[HickeyTwitter]: https://twitter.com/richhickey
+[LeonardoBorges]: http://www.slideshare.net/borgesleonardo/clojure-reducers-cljsyd-aug-2012?ref=http://www.leonardoborges.com/writings/presentations/
+[AssociativeProperty]: http://en.wikipedia.org/wiki/Associative_property
+[SimpleNotEasy]: http://www.infoq.com/presentations/Simple-Made-Easy
+</pre>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Ian Rumford</p>
+<p class="date">Created: 2014-08-08 Fri 15:01</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.6)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
